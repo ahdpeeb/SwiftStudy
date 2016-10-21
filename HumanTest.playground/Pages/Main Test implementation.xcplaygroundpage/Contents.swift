@@ -3,6 +3,12 @@
 import UIKit
 import Foundation
 
+enum genderType {
+    case male
+    case female
+    case value (String)
+}
+
 class Human {
     var fullName: String! = nil
     var age = 0

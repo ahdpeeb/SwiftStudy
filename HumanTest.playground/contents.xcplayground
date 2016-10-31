@@ -4,5 +4,8 @@
         <page name='Switch'/>
         <page name='Main Test implementation'/>
         <page name='Functions + Closure'/>
+        <page name='enum'/>
+        <page name='properties'/>
+        <page name='Subscripts'/>
     </pages>
 </playground>

@@ -19,10 +19,8 @@ let imageURL = "https://cdn1.iconfinder.com/data/icons/dinosaur/154/small-dino-d
 
 class mapViewController: UIViewController {
     let disposeBag = DisposeBag()
-    
-    // MARK: Properties / accsessors
 
-    
+    // MARK: Properties / accsessors
     public var rootView: ANSRootView! {
         return self.getView()
     }
@@ -46,7 +44,7 @@ class mapViewController: UIViewController {
         }
     }
     
-// MARK: View life cycle
+    // MARK: View life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         self.locationManager = CLLocationManager.init()
@@ -56,7 +54,7 @@ class mapViewController: UIViewController {
         super.didReceiveMemoryWarning()
     }
     
-// MARK: Private methods
+    // MARK: Private methods
      func addPin(withLocation location:CLLocation) {
         if (annotationPoint == nil) {
             annotationPoint = MKPointAnnotation()
@@ -79,9 +77,9 @@ class mapViewController: UIViewController {
                 + "postIndex: \(postIndex) \n"
                 + "street: \(street) \n"
                 + "streetInfo: \(streetInfo)"
-        
-        
     }
+    
+    // MARK: mapViewController END
 }
 
 // MARK: CLLocationManagerDelegate
@@ -140,14 +138,12 @@ extension mapViewController: MKMapViewDelegate {
             if let annotation = view.annotation {
                 let coordinate = annotation.coordinate
                 let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-                CLGeocoder().reverseGeocodeLocation(location, completionHandler: { ( placemarks : [CLPlacemark]?, error : Error?) in
-                        if let placemarks = placemarks {
-                            let placemark = placemarks.last
-                            if let placemark = placemark {
-                                let text = self.addresFromPlacemark(placemark: placemark)
-                                self.rootView.fillAddressWithText(text: text, animationDuration: 0)
-                            }
-                        }})
+                CLGeocoder().reverseGeocodeLocation(location, completionHandler: { ( placemarks: [CLPlacemark]?, error: Error?) in
+                        if let placemark = placemarks?.last {
+                            let text = self.addresFromPlacemark(placemark: placemark)
+                            self.rootView.fillAddressWithText(text: text, animationDuration: 0)
+                        }
+                    })
             }
         }
             
@@ -164,5 +160,5 @@ extension mapViewController: MKMapViewDelegate {
         }
     }
     
-    // MARK: END
+   // MARK:MKMapViewDelegate END
 }

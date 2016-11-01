@@ -12,6 +12,7 @@ import MapKit
 
 let SpanDistance: CLLocationDistance = 500;
 let TitleForPoint = "My current location"
+let imageURL = "https://cdn1.iconfinder.com/data/icons/dinosaur/154/small-dino-dinosaur-dragon-walk-48.png"
 
 extension mapViewController {
     public var rootView: ANSRootView! {
@@ -119,11 +120,11 @@ extension mapViewController: MKMapViewDelegate {
             //customize annotation View
             annotationView.canShowCallout = true
             //loading image in foreground!
-            let imageUrl = NSURL(string: "https://cdn1.iconfinder.com/data/icons/dinosaur/154/small-dino-dinosaur-dragon-walk-48.png")
-            let imageData = NSData(contentsOf: imageUrl as! URL)
-            let image = UIImage(data: imageData as! Data)
-            annotationView.image = image
-    
+            let loader = ImageLoader(ulr: imageURL)
+            loader.loadImage().subscribe(onNext: { (image:UIImage) in
+                annotationView.image = image
+            })
+            //
             annotationView.rightCalloutAccessoryView = UIButton(type: .infoLight)
             annotationView.leftCalloutAccessoryView = UIButton(type: .detailDisclosure)
             

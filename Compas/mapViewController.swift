@@ -6,7 +6,10 @@
 //  Copyright © 2016 Andriiev.Mykola. All rights reserved.
 //
 
+
 import UIKit
+import RxCocoa
+import RxSwift
 import CoreLocation
 import MapKit
 
@@ -14,21 +17,16 @@ let SpanDistance: CLLocationDistance = 500;
 let TitleForPoint = "My current location"
 let imageURL = "https://cdn1.iconfinder.com/data/icons/dinosaur/154/small-dino-dinosaur-dragon-walk-48.png"
 
-extension mapViewController {
-    public var rootView: ANSRootView! {
-        get {
-            if self.isViewLoaded && self.view.isMember(of: ANSRootView.self) {
-                return self.view as! ANSRootView
-            }
-            
-            return nil
-        }
-    }
-}
-
 class mapViewController: UIViewController {
+    let disposeBag = DisposeBag()
     
     // MARK: Properties / accsessors
+
+    
+    public var rootView: ANSRootView! {
+        return self.getView()
+    }
+    
     private var locationManager: CLLocationManager! {
         didSet {
             locationManager.requestAlwaysAuthorization()
@@ -44,7 +42,7 @@ class mapViewController: UIViewController {
     private var annotationPoint:MKPointAnnotation! {
         didSet {
             annotationPoint.title = TitleForPoint
-            rootView.mapView.addAnnotation(annotationPoint)
+            self.rootView.mapView.addAnnotation(annotationPoint)
         }
     }
     
@@ -68,18 +66,21 @@ class mapViewController: UIViewController {
     }
     
      func addresFromPlacemark(placemark: CLPlacemark) -> String {
-        let country = placemark.country
-        let city = placemark.locality
-        let postIndex = placemark.postalCode
-        let street = placemark.thoroughfare
-        let streetInfo = placemark.subThoroughfare
-        let fullAdress = "Country: \(country ?? "not found") \n" +
-            "city: \(city ?? "not found") \n" +
-            "postIndex: \(postIndex ?? "not found") \n" +
-            "street: \(street ?? "not found") \n" +
-            "streetInfo: \(streetInfo ?? "none")"
+        func addressShard(value: String?) -> String {
+           return value ?? "not found"
+        }
+    
+        let city = addressShard(value: placemark.locality)
+        let postIndex = addressShard(value: placemark.postalCode)
+        let street = addressShard(value: placemark.thoroughfare)
+        let streetInfo = addressShard(value: placemark.subThoroughfare)
         
-        return fullAdress
+        return  "city: \(city) \n"
+                + "postIndex: \(postIndex) \n"
+                + "street: \(street) \n"
+                + "streetInfo: \(streetInfo)"
+        
+        
     }
 }
 
@@ -92,7 +93,7 @@ extension mapViewController: CLLocationManagerDelegate {
             }
             //first call//if annotationPoint == nil/ or distanсe filter
             let region = MKCoordinateRegionMakeWithDistance(location.coordinate, SpanDistance, SpanDistance);
-            rootView.mapView.setRegion(region, animated: true)
+            self.rootView.mapView.setRegion(region, animated: true)
             
             self.addPin(withLocation: location)
         }
@@ -123,8 +124,8 @@ extension mapViewController: MKMapViewDelegate {
             let loader = ImageLoader(ulr: imageURL)
             loader.loadImage().subscribe(onNext: { (image:UIImage) in
                 annotationView.image = image
-            })
-            //
+            }).addDisposableTo(self.disposeBag)
+            
             annotationView.rightCalloutAccessoryView = UIButton(type: .infoLight)
             annotationView.leftCalloutAccessoryView = UIButton(type: .detailDisclosure)
             

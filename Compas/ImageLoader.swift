@@ -7,29 +7,30 @@
 //
 
 import RxSwift
-import RxCocoa
 import Foundation
 
+let linkErrorDescription = "Inappropriate image link"
+
 class ImageLoader: NSObject {
-    var url: String
+    var stringURL: String
     
-    public init(ulr: String) {
-        self.url = ulr
+    public init(stringURL: String) {
+        self.stringURL = stringURL
     }
 
     func loadImage() -> Observable<UIImage> {
         return Observable<UIImage>.create { (observer) -> Disposable in
             let session = URLSession.shared
-            guard let imageUrl = URL(string: self.url) else {
-                NSException(name: NSExceptionName(rawValue: "imageUrl exeprion"),
-                            reason: "inappropriate link",
-                            userInfo: nil).raise()
-                abort()
+            guard let imageUrl = URL(string: self.stringURL) else {
+                let error = NSError(domain: linkErrorDescription,
+                                    code: 0,
+                                    userInfo: nil)
+                observer.onError(error)
+                return Disposables.create()
             }
         
             let task = session.downloadTask(with: imageUrl,
                 completionHandler: { (url :URL?, responce :URLResponse?, error :Error?) in
-                    DispatchQueue.main.async {
                         if let error = error {
                             observer.onError(error)
                         }
@@ -42,15 +43,15 @@ class ImageLoader: NSObject {
                             
                             observer.onCompleted()
                         }
-                }})
+                })
             
             task.resume()
             
             return Disposables.create {
                 task.cancel()
             }
-        }
+        }.observeOn(MainScheduler.asyncInstance)
     }
     
-//ImageLoader
+//ImageLoader END
 }

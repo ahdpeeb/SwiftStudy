@@ -8,7 +8,6 @@
 
 
 import UIKit
-import RxCocoa
 import RxSwift
 import CoreLocation
 import MapKit
@@ -19,22 +18,10 @@ let imageURL = "https://cdn1.iconfinder.com/data/icons/dinosaur/154/small-dino-d
 
 class mapViewController: UIViewController {
     let disposeBag = DisposeBag()
-
+    let locationMageger = LocationManager()
     // MARK: Properties / accsessors
     public var rootView: ANSRootView! {
         return self.getView()
-    }
-    
-    private var locationManager: CLLocationManager! {
-        didSet {
-            locationManager.requestAlwaysAuthorization()
-            locationManager.distanceFilter = 5 //meters
-            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            
-            locationManager.delegate = self
-            locationManager.startUpdatingLocation()
-            locationManager.startUpdatingHeading()
-        }
     }
     
     private var annotationPoint:MKPointAnnotation! {
@@ -47,7 +34,14 @@ class mapViewController: UIViewController {
     // MARK: View life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.locationManager = CLLocationManager.init()
+        self.locationMageger.updateLocationWithBlock(block: {
+            $0.subscribe({ (_ event: Event<CLLocation>) in
+                if (event.element != nil) {
+                    print("\(event)")
+                }
+            }).addDisposableTo(disposeBag)
+        })
+        self.locationMageger.startUpdateHeading()
     }
 
     override func didReceiveMemoryWarning() {
@@ -82,6 +76,8 @@ class mapViewController: UIViewController {
     // MARK: mapViewController END
 }
 
+// MARK: LocationManager callBack
+
 // MARK: CLLocationManagerDelegate
 extension mapViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -102,6 +98,8 @@ extension mapViewController: CLLocationManagerDelegate {
             // manage heading
         }
     }
+    
+
 }
 
 // MARK: Private MKMapViewDelegate
@@ -119,8 +117,8 @@ extension mapViewController: MKMapViewDelegate {
             //customize annotation View
             annotationView.canShowCallout = true
             //loading image in foreground!
-            let loader = ImageLoader(ulr: imageURL)
-            loader.loadImage().subscribe(onNext: { (image:UIImage) in
+            let loader = ImageLoader(stringURL: imageURL)
+            loader.loadImage().subscribe(onNext: { (image: UIImage) in
                 annotationView.image = image
             }).addDisposableTo(self.disposeBag)
             

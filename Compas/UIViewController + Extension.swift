@@ -10,11 +10,7 @@ import Foundation
 import UIKit
 
 extension UIViewController {
-    func getView<view>() -> view? {
-        if self.isViewLoaded && self.view.isMember(of: view.self as! AnyClass) {
-            return self.view as? view
-        }
-        
-        return nil;
+    func getView<R>() -> R? {
+        return self.viewIfLoaded.flatMap({$0 as? R})
     }
 }
